@@ -2,9 +2,10 @@
 #include "notes.h"
 
 const int COIN = A0;
-const int BUZZER = A7;
+const int BUZZER = D2;
 
 void initBuzzer(){
+  pinMode(COIN, OUTPUT);
   pinMode(BUZZER, OUTPUT);
 }
 
@@ -20,6 +21,12 @@ void readSound() {
   noTone(BUZZER);
   delay(100);
   tone(BUZZER, NOTE_C8);
+  delay(200);
+  noTone(BUZZER);
+}
+
+void errorSound() {
+  tone(BUZZER, NOTE_C7);
   delay(200);
   noTone(BUZZER);
 }

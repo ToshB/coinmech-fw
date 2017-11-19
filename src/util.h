@@ -6,5 +6,6 @@
 void initBuzzer();
 void triggerCoin();
 void readSound();
+void errorSound();
 
 #endif

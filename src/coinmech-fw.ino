@@ -9,8 +9,6 @@
 #include "notes.h"
 #include "util.h"
 
-const int BUTTON = A6;
-bool buttonPressed = true;
 CardReader *cardReader;
 Display *display;
 
@@ -18,9 +16,9 @@ bool hasCard = false;
 String currentCard;
 unsigned long forgetCardAt = 0;
 
+STARTUP(RGB.mirrorTo(WKP, A5, A4, true, true));
+
 void setup() {
-  buttonPressed = true;
-  pinMode(BUTTON, INPUT_PULLUP);
   initBuzzer();
   display = new Display(0x3F);
   cardReader = new CardReader(NULL, NULL);
@@ -36,10 +34,19 @@ void scanHandler(const char *event, const char *data) {
   Serial.println(data);
 
   char *dataStr = strdup(data);
-  char *cardId = strtok(dataStr, ";");
+  char *success = strtok(dataStr, ";");
+  char *cardId = strtok(NULL, ";");
   char *balance = strtok(NULL, ";");
   char *name = strtok(NULL, ";");
   display->showBalance(cardId, balance, name);
+  Serial.print(success);
+  if(strcmp(success, "true") == 0){
+    Serial.print("coin!");
+    triggerCoin();
+  }else{
+    errorSound();
+  }
+
   RGB.control(false);
   scheduleCardForget();
 }
@@ -93,21 +100,10 @@ void firmwareUpdateHandler(system_event_t event, int param, void *) {
   display->showMessage("Receiving update", "Flashing..");
 }
 
-void checkButton() {
-  int buttonState = digitalRead(BUTTON);
-  if (buttonState == LOW) {
-    buttonPressed = false;
-  } else if (buttonState == HIGH && !buttonPressed) {
-    buttonPressed = true;
-    updateCard("test-event");
-  }
-}
-
 
 void loop() {
   unsigned long now = millis();
   checkCard();
-  checkButton();
   if (hasCard && now > forgetCardAt) {
     hasCard = false;
     forgetCard();
